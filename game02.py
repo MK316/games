@@ -82,22 +82,31 @@ display_word = " ".join([letter if i < len(st.session_state.guessed) else "_" fo
 st.markdown(f"### Word: {display_word}")
 
 # Only allow guess of the next letter in sequence
-# Only allow guess of the next letter in sequence
 if not st.session_state.game_over and len(st.session_state.guessed) < len(st.session_state.word):
     expected_letter = st.session_state.word[len(st.session_state.guessed)]
-    guess = st.text_input(f"Guess the next letter (position {len(st.session_state.guessed) + 1}):", max_chars=1)
+    guess = st.text_input(f"Guess the next letter (position {len(st.session_state.guessed) + 1}):", max_chars=1, key=f"guess_{len(st.session_state.guessed)}")
 
     if guess:
         guess = guess.lower()
 
         if guess == expected_letter:
             st.session_state.guessed.append(guess)
-            st.success(f"✅ Correct! `{guess}` is the next letter.")
-            st.experimental_rerun()  # 🔄 Immediately rerun to show updated word
+            st.session_state.feedback = f"✅ Correct! `{guess}` is the next letter."
+            st.session_state.feedback_type = "success"
         else:
             st.session_state.wrong += 1
-            st.error(f"❌ Wrong! The correct letter was `{expected_letter}`.")
-            st.experimental_rerun()
+            st.session_state.feedback = f"❌ Wrong! The correct letter was `{expected_letter}`."
+            st.session_state.feedback_type = "error"
+
+        st.experimental_rerun()  # Safely force the UI to re-render cleanly
+
+# Display feedback after rerun
+if "feedback" in st.session_state:
+    if st.session_state.feedback_type == "success":
+        st.success(st.session_state.feedback)
+    elif st.session_state.feedback_type == "error":
+        st.error(st.session_state.feedback)
+
 
 
 # Win condition
