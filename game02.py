@@ -57,13 +57,18 @@ WORDS = {
     "hangman": "a classic word guessing game"
 }
 
-# Initialize game state
+# Initialize game state safely
 if "word" not in st.session_state:
     st.session_state.word = random.choice(list(WORDS.keys()))
     st.session_state.hint = WORDS[st.session_state.word]
     st.session_state.guessed = []
     st.session_state.wrong = 0
     st.session_state.game_over = False
+
+# Ensure 'hint' is always initialized
+if "hint" not in st.session_state:
+    st.session_state.hint = WORDS[st.session_state.word]
+
 
 # Display game title and hint
 st.title("🎯 Hangman with Hints")
