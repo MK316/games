@@ -84,7 +84,7 @@ st.markdown(f"### Word: {display_word}")
 
 MAX_WRONG = len(HANGMAN_PICS) - 1
 
-if not st.session_state.game_over and st.session_state.wrong < MAX_WRONG:
+    if not st.session_state.game_over and st.session_state.wrong < MAX_WRONG:
 
 
 # Display feedback after rerun
