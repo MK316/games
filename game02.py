@@ -98,7 +98,7 @@ if not st.session_state.game_over and len(st.session_state.guessed) < len(st.ses
             st.session_state.feedback = f"❌ Wrong! The correct letter was `{expected_letter}`."
             st.session_state.feedback_type = "error"
 
-        st.experimental_rerun()  # Safely force the UI to re-render cleanly
+        st.rerun()
 
 # Display feedback after rerun
 if "feedback" in st.session_state:
