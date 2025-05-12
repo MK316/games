@@ -82,11 +82,31 @@ st.text(HANGMAN_PICS[min(st.session_state.wrong, len(HANGMAN_PICS) - 1)])
 display_word = " ".join([letter if i < len(st.session_state.guessed) else "_" for i, letter in enumerate(st.session_state.word)])
 st.markdown(f"### Word: {display_word}")
 
+
 MAX_WRONG = len(HANGMAN_PICS) - 1
 
 if not st.session_state.game_over and st.session_state.wrong < MAX_WRONG:
-    # (your guessing logic here)
-    pass  # placeholder for code block
+    expected_letter = st.session_state.word[len(st.session_state.guessed)]
+    guess = st.text_input(
+        f"Guess the next letter (position {len(st.session_state.guessed)+1}):",
+        max_chars=1,
+        key=f"guess_{len(st.session_state.guessed)}"
+    )
+
+    if guess:
+        guess = guess.lower()
+
+        if guess == expected_letter:
+            st.session_state.guessed.append(guess)
+            st.session_state.feedback = f"✅ Correct! `{guess}` is the next letter."
+            st.session_state.feedback_type = "success"
+        else:
+            st.session_state.wrong += 1
+            st.session_state.feedback = f"❌ Wrong! The correct letter was `{expected_letter}`."
+            st.session_state.feedback_type = "error"
+
+        st.rerun()
+
 
 # Display feedback after rerun
 if "feedback" in st.session_state:
