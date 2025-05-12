@@ -1,46 +1,53 @@
 import streamlit as st
 import random
 
-# Initialize once
-if "emojis" not in st.session_state:
-    base_emojis = ["🐶", "🐱", "🦊", "🐻", "🐼", "🐨", "🐯", "🦁"]
-    emoji_pairs = base_emojis * 2
-    random.shuffle(emoji_pairs)
-    st.session_state.emojis = emoji_pairs
-    st.session_state.revealed = [False] * 16
-    st.session_state.selected = []
-    st.session_state.matched = []
+# Sample word-meaning pairs
+pairs = {
+    "benevolent": "kind and generous",
+    "ambiguous": "unclear or doubtful",
+    "resilient": "able to recover quickly",
+    "eloquent": "fluent or persuasive in speaking"
+}
 
-# Layout
-for row in range(4):
-    cols = st.columns(4)
-    for col in range(4):
-        i = row * 4 + col
-        if st.session_state.revealed[i] or i in st.session_state.matched:
-            cols[col].button(st.session_state.emojis[i], key=f"btn{i}", disabled=True)
+words = list(pairs.keys())
+meanings = list(pairs.values())
+
+# Shuffle meanings for matching interface
+if "shuffled_meanings" not in st.session_state:
+    st.session_state.shuffled_meanings = random.sample(meanings, len(meanings))
+if "selections" not in st.session_state:
+    st.session_state.selections = [None] * len(words)
+
+st.markdown("### ✏️ Match the words with their meanings")
+
+# Create matching interface
+for i, word in enumerate(words):
+    cols = st.columns([1, 2])
+    cols[0].markdown(f"**{word}**")
+    st.session_state.selections[i] = cols[1].selectbox(
+        f"Select meaning for '{word}'", 
+        options=["-- Choose --"] + st.session_state.shuffled_meanings,
+        key=f"select_{i}"
+    )
+
+# Show result button
+if st.button("✅ Show Result"):
+    correct = 0
+    for i, word in enumerate(words):
+        selected = st.session_state.selections[i]
+        if selected == pairs[word]:
+            st.success(f"✔️ Correct match for **{word}**")
+            correct += 1
         else:
-            if cols[col].button("❓", key=f"btn{i}"):
-                st.session_state.revealed[i] = True
-                st.session_state.selected.append(i)
+            st.error(f"❌ Incorrect match for **{word}**")
 
-# Matching logic
-if len(st.session_state.selected) == 2:
-    a, b = st.session_state.selected
-    if st.session_state.emojis[a] == st.session_state.emojis[b]:
-        st.session_state.matched.extend([a, b])
+    if correct == len(words):
+        st.balloons()
+        st.success("🎉 All matches are correct! Well done!")
     else:
-        st.session_state.revealed[a] = False
-        st.session_state.revealed[b] = False
-    st.session_state.selected = []
+        st.info(f"You got {correct} out of {len(words)} correct.")
 
-# Win check
-if len(st.session_state.matched) == 16:
-    st.balloons()
-    st.success("🎉 You matched all pairs!")
-
-# Reset button
-if st.button("🔁 New Game"):
-    random.shuffle(st.session_state.emojis)
-    st.session_state.revealed = [False] * 16
-    st.session_state.selected = []
-    st.session_state.matched = []
+# Reset game
+if st.button("🔁 Try Again"):
+    st.session_state.shuffled_meanings = random.sample(meanings, len(meanings))
+    st.session_state.selections = [None] * len(words)
