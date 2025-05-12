@@ -82,6 +82,7 @@ display_word = " ".join([letter if i < len(st.session_state.guessed) else "_" fo
 st.markdown(f"### Word: {display_word}")
 
 # Only allow guess of the next letter in sequence
+# Only allow guess of the next letter in sequence
 if not st.session_state.game_over and len(st.session_state.guessed) < len(st.session_state.word):
     expected_letter = st.session_state.word[len(st.session_state.guessed)]
     guess = st.text_input(f"Guess the next letter (position {len(st.session_state.guessed) + 1}):", max_chars=1)
@@ -92,9 +93,12 @@ if not st.session_state.game_over and len(st.session_state.guessed) < len(st.ses
         if guess == expected_letter:
             st.session_state.guessed.append(guess)
             st.success(f"✅ Correct! `{guess}` is the next letter.")
+            st.experimental_rerun()  # 🔄 Immediately rerun to show updated word
         else:
             st.session_state.wrong += 1
             st.error(f"❌ Wrong! The correct letter was `{expected_letter}`.")
+            st.experimental_rerun()
+
 
 # Win condition
 if len(st.session_state.guessed) == len(st.session_state.word):
