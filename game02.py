@@ -1,7 +1,7 @@
 import streamlit as st
 import random
 
-# Hangman stages (6 attempts max)
+# Hangman stages (6 wrong guesses allowed)
 HANGMAN_PICS = [
     """
      +---+
@@ -47,57 +47,65 @@ HANGMAN_PICS = [
         ==="""
 ]
 
-# Word list
-WORDS = ["banana", "hangman", "streamlit", "elephant", "python", "emoji"]
+# Word list with hints
+WORDS = {
+    "banana": "a yellow fruit",
+    "streamlit": "Python tool to build web apps",
+    "elephant": "the largest land animal",
+    "python": "a programming language or a snake",
+    "umbrella": "used in rain",
+    "hangman": "a classic word guessing game"
+}
 
-# Initialize session state
+# Initialize game state
 if "word" not in st.session_state:
-    st.session_state.word = random.choice(WORDS)
+    st.session_state.word = random.choice(list(WORDS.keys()))
+    st.session_state.hint = WORDS[st.session_state.word]
     st.session_state.guessed = []
     st.session_state.wrong = 0
     st.session_state.game_over = False
 
-# Display title
-st.title("🎯 Hangman Game")
+# Display game title and hint
+st.title("🎯 Hangman with Hints")
+st.markdown(f"💡 **Hint**: *{st.session_state.hint}*")
 
-# Display hangman figure
+# Show hangman drawing
 st.text(HANGMAN_PICS[st.session_state.wrong])
 
-# Display current word progress
-display_word = " ".join([letter if letter in st.session_state.guessed else "_" for letter in st.session_state.word])
+# Show word progress
+display_word = " ".join([letter if i < len(st.session_state.guessed) else "_" for i, letter in enumerate(st.session_state.word)])
 st.markdown(f"### Word: {display_word}")
 
-# User input
-if not st.session_state.game_over:
-    guess = st.text_input("Guess a letter", max_chars=1)
+# Only allow guess of the next letter in sequence
+if not st.session_state.game_over and len(st.session_state.guessed) < len(st.session_state.word):
+    expected_letter = st.session_state.word[len(st.session_state.guessed)]
+    guess = st.text_input(f"Guess the next letter (position {len(st.session_state.guessed) + 1}):", max_chars=1)
 
     if guess:
         guess = guess.lower()
 
-        if guess in st.session_state.guessed:
-            st.warning("You've already guessed that letter.")
-        elif guess in st.session_state.word:
+        if guess == expected_letter:
             st.session_state.guessed.append(guess)
-            st.success(f"✅ Correct! `{guess}` is in the word.")
+            st.success(f"✅ Correct! `{guess}` is the next letter.")
         else:
-            st.session_state.guessed.append(guess)
             st.session_state.wrong += 1
-            st.error(f"❌ Wrong guess! `{guess}` is not in the word.")
+            st.error(f"❌ Wrong! The correct letter was `{expected_letter}`.")
 
-    # Check win
-    if all(letter in st.session_state.guessed for letter in st.session_state.word):
-        st.success(f"🎉 Congratulations! You guessed the word: **{st.session_state.word}**")
-        st.balloons()
-        st.session_state.game_over = True
+# Win condition
+if len(st.session_state.guessed) == len(st.session_state.word):
+    st.success(f"🎉 You spelled the word correctly: **{st.session_state.word}**")
+    st.balloons()
+    st.session_state.game_over = True
 
-    # Check loss
-    if st.session_state.wrong == len(HANGMAN_PICS) - 1:
-        st.error(f"💀 Game Over! The word was: **{st.session_state.word}**")
-        st.session_state.game_over = True
+# Lose condition
+if st.session_state.wrong == len(HANGMAN_PICS) - 1:
+    st.error(f"💀 Game Over! The correct word was: **{st.session_state.word}**")
+    st.session_state.game_over = True
 
-# New game button
+# Play again button
 if st.button("🔁 Play Again"):
-    st.session_state.word = random.choice(WORDS)
+    st.session_state.word = random.choice(list(WORDS.keys()))
+    st.session_state.hint = WORDS[st.session_state.word]
     st.session_state.guessed = []
     st.session_state.wrong = 0
     st.session_state.game_over = False
